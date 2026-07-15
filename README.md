@@ -1,97 +1,135 @@
-# AI-Powered Resume Analyzer
+# ResumeMind AI — AI-Powered Resume Analyzer
 
-AI-Powered Resume Analyzer is an open-source toolkit for analyzing resumes, extracting skills and experience, and scoring fit against job descriptions using a combination of ML models and LLM-assisted heuristics. It provides utilities for resume parsing, skill extraction, fit scoring, learning-path recommendations, and interview preparation assistance.
+AI-powered HR platform with a 9-agent AI Council for resume analysis, ATS scoring, skill gap analysis, market intelligence, and recruiter simulation. Uses Hugging Face Inference API for LLM and embeddings, Supabase PostgreSQL for storage.
 
 ## Features
 
-- Resume parsing and structured extraction (skills, titles, dates, education)
-- Resume-to-job matching and fit scoring
-- Skill gap analysis and suggested learning paths
-- Interview question generation and feedback
-- Integration-ready for embeddings and vector search backends
+- **AI Council** — 9 specialized AI agents (ATS Scanner, Role Matcher, Skill Analyst, Culture Fit, Career Coach, Resume Writer, Recruiter Sim, Market Intel, Debugger) + Consensus Engine
+- **Resume Analysis** — Upload or paste resume text, get multi-dimensional scoring
+- **ATS Compatibility** — Score resumes against job descriptions
+- **Skill Gap Analysis** — Identify missing skills and get a 30/60/90 day learning roadmap
+- **A/B Testing** — Compare two resumes side-by-side against a job description
+- **Recruiter Simulation** — Simulate the full hiring decision process
+- **Market Intelligence** — Analyze market demand for candidate skills
+- **GitHub & Portfolio Analysis** — Enrich resume analysis with GitHub profile and portfolio review
+- **Cover Letter Generation** — Generate job-specific cover letters
+- **Resume Timeline** — Track resume versions and improvement over time
+- **HR Analytics** — Turnover prediction, performance reviews, learning paths, compensation analysis, attendance tracking, diversity metrics
 
-## Tech stack
+## Tech Stack
 
-- Frontend: React 18 + TypeScript + Vite + Tailwind CSS
-- Backend: Express (TypeScript) + Python services for ML/data processing
-- ML: Python (spaCy, scikit-learn, sentence-transformers, etc.)
-- Tooling: pnpm, Docker, Alembic, Vitest, pytest
+| Layer | Technology |
+|-------|-----------|
+| Frontend | SvelteKit + TailwindCSS 3 |
+| Backend | FastAPI (Python) |
+| Database | Supabase PostgreSQL via SQLAlchemy |
+| AI / LLM | Hugging Face Inference API (Qwen3-32B) |
+| Embeddings | Hugging Face `BAAI/bge-large-en-v1.5` |
+| Auth | JWT (python-jose) + bcrypt |
+| NLP | spaCy + scikit-learn |
+| Infrastructure | Single-port dev server (Vite proxy → FastAPI) |
 
-## Repository layout (high level)
+## Project Structure
 
-- client/ — React SPA (TypeScript, Vite)
-- server/ — Node/TypeScript server tooling and build scripts
-- app/, services/, ml/ — Python application code, service layers and ML models
-- data/ — datasets and training CSVs
-- scripts/ — helper scripts for DB init and setup
-- tests/ — unit and integration tests (pytest / Vitest)
-
-## Quick start (development)
-
-Prerequisites:
-- Node.js (recommended >= 18) and pnpm
-- Python 3.8+
-- Docker (optional)
-
-1. Clone the repository
-
-```bash
-git clone <repo-url>
-cd SMART-RESUME-ANALYZER--master
+```
+├── frontend/               # SvelteKit SPA
+│   └── src/routes/         # App pages (login, app/, analyze, etc.)
+├── routes/                 # FastAPI route handlers
+│   ├── auth.py             # JWT authentication (login, register)
+│   ├── council.py          # AI Council endpoints
+│   ├── resume_fit.py       # Resume-job matching
+│   ├── interview.py        # Interview management
+│   ├── turnover_retention.py  # Turnover prediction
+│   └── ...                 # Other HR modules
+├── services/               # Business logic & AI services
+│   ├── llm.py              # Hugging Face LLM client
+│   ├── embeddings.py       # Hugging Face embeddings
+│   ├── auth.py             # JWT & password utilities
+│   ├── council/            # AI Council agents + orchestrator
+│   ├── skill_extractor.py  # spaCy + ML skill extraction
+│   └── ...                 # Other services
+├── db/                     # Database layer
+│   ├── database.py         # SQLAlchemy engine + session
+│   └── models.py           # All ORM models
+├── middleware/              # Error handling, rate limiting
+├── schemas/                # Pydantic request/response schemas
+├── ai_engine/              # ML model training & inference
+├── main.py                 # FastAPI app entry point
+├── run.bat                 # Local dev launcher (Windows)
+└── requirements.txt        # Python dependencies
 ```
 
-2. Install dependencies
+## Quick Start
+
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- A Supabase PostgreSQL database (or any PostgreSQL)
+- A Hugging Face API token
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repo-url>
+   cd ResumeMind-AI
+   ```
+
+2. **Set up environment variables**
+   Copy `.env.example` to `.env` and fill in:
+   ```
+   DATABASE_URL=postgresql://user:pass@host:5432/db
+   HF_TOKEN=hf_your_huggingface_token
+   JWT_SECRET=your_random_secret_string
+   ```
+
+3. **Run the launcher**
+   ```bash
+   run.bat
+   ```
+   This will:
+   - Create a Python virtual environment (`.venv`)
+   - Install Python dependencies
+   - Install Node.js dependencies
+   - Start the FastAPI backend (port 8000)
+   - Start the SvelteKit frontend (port 8080)
+
+   Wait ~45 seconds for startup (spaCy model loading), then open `http://localhost:8080`.
+
+### Manual Start
 
 ```bash
-pnpm install
+# Backend
 python -m venv .venv
-.venv\\Scripts\\activate   # Windows
-pip install -r requirements.txt
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+# Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev -- --port 8080
 ```
 
-3. Initialize the database (local)
+## API Documentation
+
+Once running, visit:
+- API Docs: `http://localhost:8000/api/docs`
+- Health Check: `http://localhost:8000/api/health`
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string (Supabase) |
+| `HF_TOKEN` | Yes | Hugging Face API token |
+| `JWT_SECRET` | Yes | Secret key for JWT tokens |
+| `SUPABASE_URL` | No | Supabase project URL (optional) |
+| `SUPABASE_KEY` | No | Supabase anon/public key (optional) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Token expiry (default: 60) |
+
+## Tests
 
 ```bash
-python init_db.py
-# or use scripts/init_database.py if you prefer
+pytest -q           # Python tests
+cd frontend && npm test  # Svelte tests
 ```
-
-4. Start development server (client + server)
-
-```bash
-pnpm dev
-```
-
-This project uses a combined dev server for frontend and backend; API endpoints are typically prefixed with `/api/`.
-
-## Running tests
-
-- JavaScript/TypeScript: `pnpm test`
-- Python: `pytest -q`
-
-## Production / Docker
-
-Build and run with Docker Compose:
-
-```bash
-docker-compose up --build -d
-```
-
-Or build the frontend and run the production server:
-
-```bash
-pnpm build
-pnpm start
-```
-
-## Environment variables
-
-Create a `.env` file at the project root and add any required API keys and configuration used by services (for example, LLM keys, `DATABASE_URL`, or vector DB credentials). Search the `services/` directory for the specific environment variables required by each module.
-
-## Contributing
-
-Contributions are welcome — open an issue or submit a pull request. Please run linters and tests before submitting changes.
-
-## License
-
-See the `LICENSE` file in the repository root.
