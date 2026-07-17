@@ -1,135 +1,192 @@
-# ResumeMind AI — AI-Powered Resume Analyzer
+# AI-Powered Resume Analyzer
 
-AI-powered HR platform with a 9-agent AI Council for resume analysis, ATS scoring, skill gap analysis, market intelligence, and recruiter simulation. Uses Hugging Face Inference API for LLM and embeddings, Supabase PostgreSQL for storage.
+AI-powered HR platform with resume analysis, ATS scoring, skill gap analysis, and recruiter simulation.
 
 ## Features
 
-- **AI Council** — 9 specialized AI agents (ATS Scanner, Role Matcher, Skill Analyst, Culture Fit, Career Coach, Resume Writer, Recruiter Sim, Market Intel, Debugger) + Consensus Engine
-- **Resume Analysis** — Upload or paste resume text, get multi-dimensional scoring
+- **Resume Analysis** — Multi-dimensional resume scoring
 - **ATS Compatibility** — Score resumes against job descriptions
-- **Skill Gap Analysis** — Identify missing skills and get a 30/60/90 day learning roadmap
-- **A/B Testing** — Compare two resumes side-by-side against a job description
-- **Recruiter Simulation** — Simulate the full hiring decision process
-- **Market Intelligence** — Analyze market demand for candidate skills
-- **GitHub & Portfolio Analysis** — Enrich resume analysis with GitHub profile and portfolio review
+- **Skill Gap Analysis** — Identify missing skills with learning roadmaps
+- **A/B Testing** — Compare resumes side-by-side
+- **Recruiter Simulation** — Simulate hiring decision process
+- **Market Intelligence** — Analyze market demand for skills
 - **Cover Letter Generation** — Generate job-specific cover letters
-- **Resume Timeline** — Track resume versions and improvement over time
-- **HR Analytics** — Turnover prediction, performance reviews, learning paths, compensation analysis, attendance tracking, diversity metrics
+- **HR Analytics** — Turnover prediction, performance reviews, compensation analysis
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | SvelteKit + TailwindCSS 3 |
-| Backend | FastAPI (Python) |
-| Database | Supabase PostgreSQL via SQLAlchemy |
-| AI / LLM | Hugging Face Inference API (Qwen3-32B) |
-| Embeddings | Hugging Face `BAAI/bge-large-en-v1.5` |
-| Auth | JWT (python-jose) + bcrypt |
+|-------|------------|
+| Frontend | React + TypeScript (or SvelteKit) |
+| Backend | FastAPI (Python 3.11+) |
+| Database | PostgreSQL with SQLAlchemy ORM |
+| AI / LLM | Hugging Face Inference API (Qwen2) |
+| Auth | JWT + bcrypt |
 | NLP | spaCy + scikit-learn |
-| Infrastructure | Single-port dev server (Vite proxy → FastAPI) |
+| Vector DB | Qdrant (optional) |
 
-## Project Structure
+## Prerequisites
 
-```
-├── frontend/               # SvelteKit SPA
-│   └── src/routes/         # App pages (login, app/, analyze, etc.)
-├── routes/                 # FastAPI route handlers
-│   ├── auth.py             # JWT authentication (login, register)
-│   ├── council.py          # AI Council endpoints
-│   ├── resume_fit.py       # Resume-job matching
-│   ├── interview.py        # Interview management
-│   ├── turnover_retention.py  # Turnover prediction
-│   └── ...                 # Other HR modules
-├── services/               # Business logic & AI services
-│   ├── llm.py              # Hugging Face LLM client
-│   ├── embeddings.py       # Hugging Face embeddings
-│   ├── auth.py             # JWT & password utilities
-│   ├── council/            # AI Council agents + orchestrator
-│   ├── skill_extractor.py  # spaCy + ML skill extraction
-│   └── ...                 # Other services
-├── db/                     # Database layer
-│   ├── database.py         # SQLAlchemy engine + session
-│   └── models.py           # All ORM models
-├── middleware/              # Error handling, rate limiting
-├── schemas/                # Pydantic request/response schemas
-├── ai_engine/              # ML model training & inference
-├── main.py                 # FastAPI app entry point
-├── run.bat                 # Local dev launcher (Windows)
-└── requirements.txt        # Python dependencies
-```
+- Python 3.11+
+- PostgreSQL 12+
+- Node.js 18+ (for frontend)
+- Hugging Face API token (get from https://huggingface.co/settings/tokens)
 
 ## Quick Start
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- A Supabase PostgreSQL database (or any PostgreSQL)
-- A Hugging Face API token
-
-### Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd ResumeMind-AI
-   ```
-
-2. **Set up environment variables**
-   Copy `.env.example` to `.env` and fill in:
-   ```
-   DATABASE_URL=postgresql://user:pass@host:5432/db
-   HF_TOKEN=hf_your_huggingface_token
-   JWT_SECRET=your_random_secret_string
-   ```
-
-3. **Run the launcher**
-   ```bash
-   run.bat
-   ```
-   This will:
-   - Create a Python virtual environment (`.venv`)
-   - Install Python dependencies
-   - Install Node.js dependencies
-   - Start the FastAPI backend (port 8000)
-   - Start the SvelteKit frontend (port 8080)
-
-   Wait ~45 seconds for startup (spaCy model loading), then open `http://localhost:8080`.
-
-### Manual Start
+### 1. Clone Repository
 
 ```bash
-# Backend
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
-.venv\Scripts\python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-# Frontend (separate terminal)
-cd frontend
-npm install
-npm run dev -- --port 8080
+git clone https://github.com/Dweepangain11dec99/AI-POWERED-RESUME-ANALYZER.git
+cd AI-POWERED-RESUME-ANALYZER
 ```
 
-## API Documentation
+### 2. Setup Environment
 
-Once running, visit:
-- API Docs: `http://localhost:8000/api/docs`
-- Health Check: `http://localhost:8000/api/health`
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+# Required: DATABASE_URL, HF_TOKEN, JWT_SECRET
+```
+
+### 3. Install Dependencies
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
+```
+
+### 4. Initialize Database
+
+```bash
+# Create tables (automatic on first run)
+python -c "from app.db.database import init_db; init_db()"
+```
+
+### 5. Run Application
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Visit: http://localhost:8000/api/docs
+
+## Docker Deployment
+
+```bash
+# Build image
+docker-compose build
+
+# Run services
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f fastapi-app
+```
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string (Supabase) |
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `HF_TOKEN` | Yes | Hugging Face API token |
-| `JWT_SECRET` | Yes | Secret key for JWT tokens |
-| `SUPABASE_URL` | No | Supabase project URL (optional) |
-| `SUPABASE_KEY` | No | Supabase anon/public key (optional) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Token expiry (default: 60) |
+| `JWT_SECRET` | Yes | Secret key for JWT tokens (min 32 chars) |
+| `APP_ENV` | No | `development` or `production` |
+| `DEBUG` | No | Enable debug logging |
+| `CORS_ORIGINS` | No | Comma-separated CORS origins |
 
-## Tests
+## Project Structure
+
+```
+├── app/
+│   ├── db/
+│   │   ├── database.py       # SQLAlchemy setup
+│   │   └── models.py         # Database models
+│   ├── routes/
+│   │   ├── health.py         # Health check endpoint
+│   │   ├── auth.py           # Authentication endpoints
+│   │   └── __init__.py        # Router discovery
+│   ├── services/
+│   │   ├── llm.py            # LLM service
+│   │   ├── auth.py           # Auth utilities
+│   │   └── environment_checks.py
+│   ├── middleware/
+│   │   └── error_handling.py
+│   └── api_docs.py           # OpenAPI config
+├── main.py                   # FastAPI app entry point
+├── requirements.txt          # Python dependencies
+├── docker-compose.yml        # Docker compose config
+├── Dockerfile                # Docker build config
+└── .env.example              # Environment template
+```
+
+## API Documentation
+
+Once running, visit:
+- **Swagger UI**: http://localhost:8000/api/docs
+- **ReDoc**: http://localhost:8000/api/redoc
+- **Health Check**: http://localhost:8000/health
+
+## Development
+
+### Running Tests
 
 ```bash
-pytest -q           # Python tests
-cd frontend && npm test  # Svelte tests
+pytest -v
+pytest --cov=app
 ```
+
+### Code Quality
+
+```bash
+pylint app/
+black app/ main.py
+isort app/ main.py
+```
+
+## Troubleshooting
+
+### Database Connection Error
+```
+Make sure PostgreSQL is running and DATABASE_URL is correct
+psql $DATABASE_URL -c "SELECT 1"
+```
+
+### spaCy Model Missing
+```bash
+python -m spacy download en_core_web_sm
+```
+
+### Tesseract Not Found
+```bash
+# Ubuntu/Debian
+sudo apt-get install tesseract-ocr
+
+# macOS
+brew install tesseract
+
+# Windows
+# Download from: https://github.com/UB-Mannheim/tesseract/wiki
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Support
+
+For issues and questions:
+- GitHub Issues: https://github.com/Dweepangain11dec99/AI-POWERED-RESUME-ANALYZER/issues
+- Documentation: See `/docs` directory
